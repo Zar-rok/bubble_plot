@@ -4,7 +4,7 @@ Generate the Latex source file to generate bubble plot visualisation.
 
 Example of a bubble plot generate with the following [Latex code](example/example.tex) using the following [dummy data](example/test.csv).
 
-![Example of a bubble plot generated on Latex](example/example.pdf)
+![Example of a bubble plot generated on Latex](example/example.png)
 
 ## WIP
 
