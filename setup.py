@@ -7,7 +7,7 @@ setuptools.setup(
     name="bubble_plot-Zar",
     version="0.0.1",
     author="Zar",
-    author_email="zar_rok@live.com",
+    author_email="zar_rok@live.fr",
     description="Generate the Latex source files for bubble plots.",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
