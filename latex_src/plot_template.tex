@@ -1,0 +1,45 @@
+% Tested on overleaf.com
+\documentclass{standalone}
+\usepackage{bubble_plot}
+
+${define_color_year}
+
+\pgfplotsset{
+    colormap={yearcolor}{
+        ${color_map_year}
+    }
+}
+
+\begin{document}
+\pgfplotstableread[col sep=comma]{${csv_data_file}}{\datatable}
+\begin{tikzpicture}
+    \begin{axis}[
+        x=7mm,
+        xmin=${x_min}, xmax=${x_max},
+        xticklabels from table={\datatable}{x},
+        y=1cm,
+        ylabel={${y_facet_label}},
+        yticklabels from table={\datatable}{y},
+        enlarge y limits={0.2},
+    ]
+        \addplot[
+            scatter,
+            only marks,
+        ] table[
+            x=${csv_col_x_indices},
+            y=${csv_col_y_indices},
+            meta=${csv_col_occurence}
+        ] {\datatable};
+    \end{axis}
+
+    \node[below=1cm of tickLabel 5] {${x_left_facet_label}};
+    \node[below=1cm of tickLabel 13] {${x_right_facet_label}};
+
+    \node (offset) at (6.25,-2) {};
+    \pgfmathsetmacro{\osx}{0}
+    \foreach[remember=\osx as \osx] \colValue/\colLabel in {${color_value_label}}{
+        \node[right=\osx mm of offset, draw=\outline{\colValue}, fill=\colValue, label={[align=center]below:\colLabel-}] {};
+        \pgfmathsetmacro{\osx}{\osx + 12}
+    }
+\end{tikzpicture}
+\end{document}

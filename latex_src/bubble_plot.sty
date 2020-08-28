@@ -1,0 +1,42 @@
+\ProvidesPackage{bubble_plot}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+
+\newcommand*{\outline}[1]{#1!50!black}
+
+\pgfplotsset{
+    compat=1.15,
+    grid=major,
+    major grid style={dashed},
+    point meta=explicit,
+    xtick=data,
+    xticklabel style={font=\scriptsize, align=center, anchor=north east, rotate=70, name=tickLabel \ticknum},
+    ytick=data,
+    yticklabel style={fill=white, inner sep=1.5pt, font=\scriptsize, above=0.5mm},
+    ylabel style={at={(ticklabel* cs:1,0)}, rotate=-90, anchor=south},
+    axis y line*=middle,
+    colormap name=yearcolor,
+    colormap access=piecewise const,
+    scatter/@pre marker code/.code={
+        \pgfplotstablegetelem{\coordindex}{score_year}\of{\datatable}
+        \pgfplotscolormapdefinemappedcolor{\pgfplotsretval}
+        \pgfmathparse{\pgfplotspointmetatransformed / 1000 * 5 + 1}
+        \def\markopts{
+            mark=text,
+            text mark=\pgfmathprintnumber{\pgfplotspointmeta},
+            text mark as node=true,
+            text mark style={
+                circle,
+                font=\tiny,
+                draw=\outline{mapped color},
+                fill=mapped color,
+                inner sep=\pgfmathresult
+            }
+        }
+        \expandafter\scope\expandafter[\markopts]
+    },
+}
