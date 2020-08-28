@@ -1,16 +1,18 @@
 """
 Module to generate the Latex source files for bubble plots.
+
 A plot has three facets, one as the y axis and two on the x axis.
 """
 
 import csv
 from itertools import zip_longest
 from operator import attrgetter, itemgetter
-from typing import Sequence, Dict, Tuple, Set, NamedTuple
+from typing import Dict, NamedTuple, Sequence, Set, Tuple
 
 
 class Facets(NamedTuple):
-    """Describe the name of the facets of a bubble plot.
+    """
+    Describe the name of the facets of a bubble plot.
 
     Attributes
     ----------
@@ -21,27 +23,28 @@ class Facets(NamedTuple):
     x_right: str
         Name of the facet on the right part of the x axis.
     """
+
     y: str
     x_left: str
     x_right: str
 
 
 class Config(NamedTuple):
-    """Describe custom settings for the bubble plot.
+    """
+    Describe custom settings for the bubble plot.
 
     Attributes
     ----------
     x_left_offset: int
-        Define the offset at which the first x tick
-        near the left of the y axis is placed.
+        Define the offset at which the first x tick near the left of the y axis is placed.
     x_right_offset: int
-        Define the offset at which the first x tick
-        near the right of the y axis is placed.
+        Define the offset at which the first x tick near the right of the y axis is placed.
     class_year: str
         Label representing the publication year.
     field_names: Sequence[str]
         Name of the columns for the ouput file of the bubble plot.
     """
+
     x_left_offset: int
     x_right_offset: int
     class_year: str
@@ -49,7 +52,8 @@ class Config(NamedTuple):
 
 
 class Occurence:
-    """Compute the occurence of a bubble.
+    """
+    Compute the occurence of a bubble.
 
     Attributes
     ----------
@@ -58,7 +62,8 @@ class Occurence:
     year: str
         Earliest year from entries related to the bubble.
     """
-    __slots__ = ('occurence', 'year')
+
+    __slots__ = ("occurence", "year")
 
     def __init__(self, year: str):
         """
@@ -71,13 +76,13 @@ class Occurence:
         self.year: str = year
 
     def update(self, new_year: str):
-        """Update the occurences and save the earliest publish year.
+        """
+        Update the occurences and save the earliest publish year.
 
         Parameters
         ----------
         new_year: str
-            New publish year to update `year` with if
-            it's less than the current year.
+            New publish year to update `year` with if it's less than the current year.
         """
         self.occurence += 1
         self.year = min(self.year, new_year)
@@ -90,7 +95,8 @@ class Occurence:
 
 
 class Bubble(NamedTuple):
-    """Bubble label on the x axis and y axis.
+    """
+    Bubble label on the x axis and y axis.
 
     Attributes
     ----------
@@ -101,15 +107,17 @@ class Bubble(NamedTuple):
 
     Notes
     -----
-    The x and y tick label are keys from the
-    Latex `pgfplots <https://ctan.org/pkg/pgfplots>`_ package.
+    The x and y tick label are keys from the Latex
+    `pgfplots <https://ctan.org/pkg/pgfplots>`_ package.
     """
+
     label_x: str
     label_y: str
 
 
 class SplitXAxis(NamedTuple):
-    """Facet on one side of the splited x axis.
+    """
+    Facet on one side of the splited x axis.
 
     Attributes
     ----------
@@ -118,12 +126,13 @@ class SplitXAxis(NamedTuple):
     bubbles: Dict[Bubble, Occurence]
         Bubbles related to the facet
     """
+
     facet: str
     bubbles: Dict[Bubble, Occurence]
 
-    def update(self, entry: Dict[str, str],
-               year: str, y_axis: str) -> None:
-        """Update the bubble occurences related to the side of the x axis.
+    def update(self, entry: Dict[str, str], year: str, y_axis: str) -> None:
+        """
+        Update the bubble occurences related to the side of the x axis.
 
         Parameters
         ----------
@@ -137,13 +146,13 @@ class SplitXAxis(NamedTuple):
         try:
             label_x = entry[self.facet]
         except KeyError as error:
-            raise KeyError(("Unkown facet named: "
-                            f"{error} on the x axis"))
+            raise KeyError(
+                f"Unkown facet named: {error} on the x axis") from error
         try:
             label_y = entry[y_axis]
         except KeyError as error:
-            raise KeyError(("Unkown facet named: "
-                            f"{error} on the y axis"))
+            raise KeyError(
+                f"Unkown facet named: {error} on the y axis") from error
 
         bubble = Bubble(label_x=label_x, label_y=label_y)
         if bubble in self.bubbles:
@@ -153,7 +162,8 @@ class SplitXAxis(NamedTuple):
 
 
 class XAxis(NamedTuple):
-    """Facets of the x axis.
+    """
+    Facets of the x axis.
 
     Attributes
     ----------
@@ -162,22 +172,24 @@ class XAxis(NamedTuple):
     right: SplitXAxis
         Right facet of a bubble plot.
     """
+
     left: SplitXAxis
     right: SplitXAxis
 
 
 class BubblePlot:
-    """Describe a bubble plot with 3 facets.
+    """
+    Describe a bubble plot with 3 facets.
 
     Attributes
     ----------
     x_axis: XAxis
-        Facets on the x axis. One to the left of the y axis
-        and the other to the right.
+        Facets on the x axis. One to the left of the y axis and the other to the right.
     y_axis: str
         Facet on the y axis.
     """
-    __slots__ = ('x_axis', 'y_axis')
+
+    __slots__ = ("x_axis", "y_axis")
 
     def __init__(self, facets: Facets):
         """
@@ -187,10 +199,10 @@ class BubblePlot:
             Describe the facets label of the bubble plot.
         """
         y_axis, x_left_axis, x_right_axis = facets
-        self.x_axis: XAxis = XAxis(left=SplitXAxis(facet=x_left_axis,
-                                                   bubbles={}),
-                                   right=SplitXAxis(facet=x_right_axis,
-                                                    bubbles={}))
+        self.x_axis: XAxis = XAxis(
+            left=SplitXAxis(facet=x_left_axis, bubbles={}),
+            right=SplitXAxis(facet=x_right_axis, bubbles={}),
+        )
         self.y_axis: str = y_axis
 
     def __str__(self):
@@ -202,16 +214,14 @@ class BubblePlot:
             the name of the facet on the y axis, and
             the name of the right facet on the x axis.
         """
-        return (f"{self.x_axis.left.facet}_"
-                f"{self.y_axis}_"
-                f"{self.x_axis.right.facet}")
+        return f"{self.x_axis.left.facet}_{self.y_axis}_{self.x_axis.right.facet}"
 
     def __repr__(self):
-        return (f"{self.__class__.__name__}"
-                f"{(self.x_axis, self.y_axis)}")
+        return f"{self.__class__.__name__}{(self.x_axis, self.y_axis)}"
 
     def update(self, entry: Dict[str, str], year: str) -> None:
-        """Update the bubbles occurences of the plot.
+        """
+        Update the bubbles occurences of the plot.
 
         Parameters
         ----------
@@ -227,7 +237,8 @@ class BubblePlot:
 
 
 class CSVWriter(NamedTuple):
-    """Save a bubble plot as a CSV file.
+    """
+    Save a bubble plot as a CSV file.
 
     Attributes
     ----------
@@ -238,13 +249,15 @@ class CSVWriter(NamedTuple):
     conf: Config
         Describe custom settings for the plots.
     """
+
     plot: BubblePlot
     years: Set[str]
     conf: Config
 
     def compute_year_score_mapping(self) -> Dict[str, int]:
-        """Compute the mapping between years and color map scores.
-        The scores are mapped in chronological order of the years.
+        """
+        Compute the mapping between years and color map scores. The scores are mapped in
+        chronological order of the years.
 
         Returns
         -------
@@ -254,8 +267,8 @@ class CSVWriter(NamedTuple):
         Notes
         -----
         The color map score is in the interval [0-1000].
-        See paragraph ``Colormap Input Format Reference`` in Section 4.7.6
-        of the Latex `pgfplots <https://ctan.org/pkg/pgfplots>`_ package.
+        See paragraph ``Colormap Input Format Reference`` in Section 4.7.6 of the
+        Latex `pgfplots <https://ctan.org/pkg/pgfplots>`_ package.
         """
         idx = 0
         incr = 1000 // (len(self.years) - 1)
@@ -265,9 +278,10 @@ class CSVWriter(NamedTuple):
             idx += incr
         return year_score
 
-    def compute_labels_indices_mapping(self) -> Tuple[Dict[str, int],
-                                                      Dict[str, int]]:
-        """Compute the mapping between labels and their indices.
+    def compute_labels_indices_mapping(
+            self) -> Tuple[Dict[str, int], Dict[str, int]]:
+        """
+        Compute the mapping between labels and their indices.
 
         Returns
         -------
@@ -277,23 +291,30 @@ class CSVWriter(NamedTuple):
                 - the y tick labels and their indices.
         """
 
-        labels_x_left = sorted(set(map(attrgetter('label_x'),
-                                       self.plot.x_axis.left.bubbles)))
+        labels_x_left = sorted(
+            set(map(attrgetter("label_x"), self.plot.x_axis.left.bubbles)))
         labels_x_left_len = len(labels_x_left)
         # From -N to -conf.x_left_offset
-        x_left_mapping = {label: -(labels_x_left_len - i +
-                                   self.conf.x_left_offset)
-                          for i, label in enumerate(labels_x_left)}
+        x_left_mapping = {
+            label: -(labels_x_left_len - i + self.conf.x_left_offset)
+            for i, label in enumerate(labels_x_left)
+        }
 
-        labels_x_right = sorted(set(map(attrgetter('label_x'),
-                                        self.plot.x_axis.right.bubbles)))
+        labels_x_right = sorted(
+            set(map(attrgetter("label_x"), self.plot.x_axis.right.bubbles)))
         # From conf.x_left_offset to N
-        x_right_mapping = {label: i + self.conf.x_right_offset
-                           for i, label in enumerate(labels_x_right)}
+        x_right_mapping = {
+            label: i + self.conf.x_right_offset
+            for i, label in enumerate(labels_x_right)
+        }
 
-        labels_y = sorted(set(map(attrgetter('label_y'),
-                                  list(self.plot.x_axis.right.bubbles) +
-                                  list(self.plot.x_axis.left.bubbles))))
+        labels_y = sorted(
+            set(
+                map(
+                    attrgetter("label_y"),
+                    list(self.plot.x_axis.right.bubbles) +
+                    list(self.plot.x_axis.left.bubbles),
+                )))
         # From 0 to N-1
         y_mapping = {label: i for i, label in enumerate(labels_y)}
 
@@ -301,11 +322,14 @@ class CSVWriter(NamedTuple):
 
         return x_mapping, y_mapping
 
-    def prepared_bubbles_data(self, x_mapping: Dict[str, int],
-                              y_mapping: Dict[str, int],
-                              year_mapping: Dict[str, int]) -> Sequence[
-                                  Tuple[int, int, int, int]]:
-        """Prepare bubbles data.
+    def prepared_bubbles_data(
+        self,
+        x_mapping: Dict[str, int],
+        y_mapping: Dict[str, int],
+        year_mapping: Dict[str, int],
+    ) -> Sequence[Tuple[int, int, int, int]]:
+        """
+        Prepare bubbles data.
 
         Parameters
         ----------
@@ -326,19 +350,25 @@ class CSVWriter(NamedTuple):
             - The number of occurence of the bubble.
             - The earliest publication year related to the bubble.
         """
-        bubbles = {**self.plot.x_axis.left.bubbles,
-                   **self.plot.x_axis.right.bubbles}
-        return tuple((y_mapping[bubble.label_y],
-                      x_mapping[bubble.label_x],
-                      occurence.occurence,
-                      year_mapping[occurence.year])
-                     for bubble, occurence in bubbles.items())
+        bubbles = {
+            **self.plot.x_axis.left.bubbles,
+            **self.plot.x_axis.right.bubbles
+        }
+        return tuple((
+            y_mapping[bubble.label_y],
+            x_mapping[bubble.label_x],
+            occurence.occurence,
+            year_mapping[occurence.year],
+        ) for bubble, occurence in bubbles.items())
 
-    def write(self,
-              data: Sequence[Tuple[int, int, int, int]],
-              labels_y: Sequence[str],
-              labels_x: Sequence[str]) -> None:
-        """Save bubble plot as a CVS file.
+    def write(
+        self,
+        data: Sequence[Tuple[int, int, int, int]],
+        labels_y: Sequence[str],
+        labels_x: Sequence[str],
+    ) -> None:
+        """
+        Save bubble plot as a CVS file.
 
         Parameters
         ----------
@@ -361,33 +391,34 @@ class CSVWriter(NamedTuple):
             occurences.append(occ)
             year_scores.append(y_s)
 
-        with open(f"{self.plot}.csv", 'w') as output_file:
+        with open(f"{self.plot}.csv", "w") as output_file:
             writer = csv.writer(output_file)
             writer.writerow(self.conf.field_names)
-            writer.writerows(zip_longest(y_indices, x_indices,
-                                         occurences, year_scores,
-                                         labels_y, labels_x))
+            writer.writerows(
+                zip_longest(y_indices, x_indices, occurences, year_scores,
+                            labels_y, labels_x))
 
     def save_plot(self) -> None:
-        """Compute the mapping between labels and their indices;
-        year and their scores. Prepared bubble plot data for the
-        CSV file. And write data and labels into a file.
+        """
+        Compute the mapping between labels and their indices; year and their scores.
+
+        Prepared bubble plot data for the CSV file. And write data and
+        labels into a file.
         """
         x_mapping, y_mapping = self.compute_labels_indices_mapping()
         year_score = self.compute_year_score_mapping()
         bubbles_data = self.prepared_bubbles_data(x_mapping, y_mapping,
                                                   year_score)
         sorted_bubbles_data = sorted(bubbles_data, key=itemgetter(1))
-        self.write(sorted_bubbles_data,
-                   list(y_mapping.keys()),
+        self.write(sorted_bubbles_data, list(y_mapping.keys()),
                    list(x_mapping.keys()))
 
 
-def compute_occurences_from(entries: Sequence[Dict[str, str]],
-                            plot_plan: Facets,
-                            conf: Config) -> Tuple[BubblePlot,
-                                                   Set[str]]:
-    """Compute the occurences of each value for the given labels.
+def compute_occurences_from(entries: Sequence[Dict[str,
+                                                   str]], plot_plan: Facets,
+                            conf: Config) -> Tuple[BubblePlot, Set[str]]:
+    """
+    Compute the occurences of each value for the given labels.
 
     Parameters
     ----------
@@ -414,9 +445,9 @@ def compute_occurences_from(entries: Sequence[Dict[str, str]],
 
 
 def build_and_save_plots(entries: Sequence[Dict[str, str]],
-                         plot_plans: Sequence[Facets],
-                         conf: Config) -> None:
-    """Build and save bubble plots as CSV files.
+                         plot_plans: Sequence[Facets], conf: Config) -> None:
+    """
+    Build and save bubble plots as CSV files.
 
     Parameters
     ----------
@@ -429,5 +460,5 @@ def build_and_save_plots(entries: Sequence[Dict[str, str]],
     """
     for plot_plan in plot_plans:
         plot, years = compute_occurences_from(entries, plot_plan, conf)
-        writer = CSVWriter(plot, years, conf)
-        writer.save_plot()
+        writer_csv = CSVWriter(plot, years, conf)
+        writer_csv.save_plot()
