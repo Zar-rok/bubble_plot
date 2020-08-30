@@ -45,12 +45,18 @@ class Config(NamedTuple):
         Label representing the publication year.
     field_names: Sequence[str]
         Name of the columns for the ouput file of the bubble plot.
+    latex_template: str
+        Path to the Latex template.
+    latex_output: str
+        Path where to save the filled Latex template.
     """
 
     x_left_offset: int
     x_right_offset: int
     class_year: str
     field_names: Sequence[str]
+    latex_template: str
+    latex_output: str
 
 
 class Occurence:
@@ -148,11 +154,13 @@ class SplitXAxis(NamedTuple):
         try:
             label_x = entry[self.facet]
         except KeyError as error:
-            raise KeyError(f"Unkown facet named: {error} on the x axis") from error
+            raise KeyError(
+                f"Unkown facet named: {error} on the x axis") from error
         try:
             label_y = entry[y_axis]
         except KeyError as error:
-            raise KeyError(f"Unkown facet named: {error} on the y axis") from error
+            raise KeyError(
+                f"Unkown facet named: {error} on the y axis") from error
 
         bubble = Bubble(label_x=label_x, label_y=label_y)
         if bubble in self.bubbles:
@@ -290,7 +298,8 @@ class CSVWriter(NamedTuple):
                 - the y tick labels and their indices.
         """
 
-        labels_x_left = sorted(set(map(attrgetter("label_x"), self.plot.x_axis.left.bubbles)))
+        labels_x_left = sorted(
+            set(map(attrgetter("label_x"), self.plot.x_axis.left.bubbles)))
         labels_x_left_len = len(labels_x_left)
         # From -N to -conf.x_left_offset
         x_left_mapping = {
@@ -298,7 +307,8 @@ class CSVWriter(NamedTuple):
             for i, label in enumerate(labels_x_left)
         }
 
-        labels_x_right = sorted(set(map(attrgetter("label_x"), self.plot.x_axis.right.bubbles)))
+        labels_x_right = sorted(
+            set(map(attrgetter("label_x"), self.plot.x_axis.right.bubbles)))
         # From conf.x_left_offset to N
         x_right_mapping = {
             label: i + self.conf.x_right_offset for i, label in enumerate(labels_x_right)
@@ -308,7 +318,8 @@ class CSVWriter(NamedTuple):
             set(
                 map(
                     attrgetter("label_y"),
-                    list(self.plot.x_axis.right.bubbles) + list(self.plot.x_axis.left.bubbles),
+                    list(self.plot.x_axis.right.bubbles) +
+                    list(self.plot.x_axis.left.bubbles),
                 )
             )
         )
@@ -344,7 +355,8 @@ class CSVWriter(NamedTuple):
             - The number of occurence of the bubble.
             - The earliest publication year related to the bubble.
         """
-        bubbles = {**self.plot.x_axis.left.bubbles, **self.plot.x_axis.right.bubbles}
+        bubbles = {**self.plot.x_axis.left.bubbles,
+                   **self.plot.x_axis.right.bubbles}
         return tuple(
             (
                 y_mapping[bubble.label_y],
@@ -389,7 +401,8 @@ class CSVWriter(NamedTuple):
             writer = csv.writer(output_file)
             writer.writerow(self.conf.field_names)
             writer.writerows(
-                zip_longest(y_indices, x_indices, occurences, year_scores, labels_y, labels_x)
+                zip_longest(y_indices, x_indices, occurences,
+                            year_scores, labels_y, labels_x)
             )
 
     def save_plot(self) -> None:
@@ -401,52 +414,92 @@ class CSVWriter(NamedTuple):
         """
         x_mapping, y_mapping = self.compute_labels_indices_mapping()
         year_score = self.compute_year_score_mapping()
-        bubbles_data = self.prepared_bubbles_data(x_mapping, y_mapping, year_score)
+        bubbles_data = self.prepared_bubbles_data(
+            x_mapping, y_mapping, year_score)
         sorted_bubbles_data = sorted(bubbles_data, key=itemgetter(1))
-        self.write(sorted_bubbles_data, list(y_mapping.keys()), list(x_mapping.keys()))
+        self.write(sorted_bubbles_data, list(
+            y_mapping.keys()), list(x_mapping.keys()))
+
+
+def year_color_mapping(years: Set[str]) -> Dict[str, str]:
+    """
+    Affect a distinct (as much as possible) color to each year.
+
+    Returns
+    -------
+    Dict[str, str]
+        Mapping between a year and the related color used for a bubble on the plot.
+    """
+    years_len = len(years)
+    hsv_tuples = [(i * 1.0 / years_len, 0.5, 1) for i in range(years_len)]
+    rgb_tuples = tuple(
+        str(colorsys.hsv_to_rgb(*hsv)).translate({ord(c): None for c in "()"}) for hsv in hsv_tuples
+    )
+    return dict(zip(years, rgb_tuples))
 
 
 class LatexBubblePlotWriter:
-    """TODO."""
+    """
+    Prepare the Latex template for a bubble plot.
+
+    Attributes
+    ----------
+    plot: BubblePlot
+        Plot to prepare and format.
+    years: Set[str]
+        Publication years.
+    conf: Config
+        Describe custom settings for the plots.
+    x_indices: Sequence[int]
+        Indices of bubbles on the x axis.
+    """
 
     __slots__ = ("plot", "years", "year_color", "conf", "x_indices")
 
     def __init__(self, plot: BubblePlot, years: Set[str], conf: Config):
-        """TODO."""
+        """
+        Parameters
+        ----------
+        plot: BubblePlot
+            Plot to prepare and format.
+        years: Set[str]
+            Publication years.
+        conf: Config
+            Describe custom settings for the plots.
+        """
         self.plot: BubblePlot = plot
         self.years: Set[str] = years
-        self.year_color: Dict[str, str] = self.year_color_mapping()
         self.conf: Config = conf
         with open(f"{plot}.csv", "r") as plot_data:
             reader = csv.DictReader(plot_data)
-            self.x_indices = tuple(map(itemgetter(conf.field_names[1]), reader))
+            self.x_indices: Sequence[int] = tuple(
+                map(itemgetter(conf.field_names[1]), reader))
 
-    def year_color_mapping(self) -> Dict[str, str]:
-        """TODO."""
-        years_len = len(self.years)
-        hsv_tuples = [(i * 1.0 / years_len, 0.5, 1) for i in range(years_len)]
-        rgb_tuples = tuple(
-            str(colorsys.hsv_to_rgb(*hsv)).translate({ord(c): None for c in "()"})
-            for hsv in hsv_tuples
-        )
-        return dict(zip(self.years, rgb_tuples))
+    def prepare_values(self, year_color: Dict[str, str]) -> Dict[str, str]:
+        """
+        Prepare the values filled in the Latex template.
 
-    def prepare_values(self, legend: Dict[str, str]) -> Dict[str, str]:
-        """TODO."""
+        Parameters
+        ----------
+        year_color: Dict[str, str]
+            Mapping between a year and the related color used for a bubble on the plot.
+
+        Returns
+        -------
+        Dict[str, str]
+            Values to fill the Latex template with.
+        """
         return {
             "define_color_year": "\n".join(
-                [
-                    (f"\\definecolor{{{year}}}{{rgb}}" f"{{{self.year_color[year]}}}")
-                    for year in self.years
-                ]
+                [f"\\definecolor{{{year}}}{{rgb}}{{{year_color[year]}}}" for year in self.years]
             ),
-            "color_map_year": "\n\t".join([f"color=({year})," for year in self.years]),
+            "color_map_year": "\n\t\t".join([f"color=({year})," for year in self.years]),
             "color_value_label": ", ".join([f"{year}/{year}" for year in self.years]),
-            "y_facet_label": legend[self.plot.y_axis],
-            "x_left_facet_label": legend[self.plot.x_axis.left.facet],
-            "x_right_facet_label": legend[self.plot.x_axis.right.facet],
-            "x_min": min(self.x_indices),
-            "x_max": max(self.x_indices),
+            "y_facet_label": self.plot.y_axis,
+            "x_left_facet_label": self.plot.x_axis.left.facet,
+            "x_right_facet_label": self.plot.x_axis.right.facet,
+            "x_min": str(min(self.x_indices)),
+            "x_max": str(max(self.x_indices)),
             "csv_data_file": f"{self.plot}.csv",
             "csv_col_y_indices": self.conf.field_names[0],
             "csv_col_x_indices": self.conf.field_names[1],
@@ -454,17 +507,25 @@ class LatexBubblePlotWriter:
         }
 
     def write(self, template_values: Dict[str, str]) -> None:
-        """TODO."""
-        with open("latex_src/plot_template.tex", "r") as latex_template:
+        """
+        Fill the Latex template with the bubble plot specific values.
+
+        Parameters
+        ----------
+        template_values: Dict[str, str]
+            Values to fill the Latex template with.
+        """
+        with open(self.conf.latex_template, "r") as latex_template:
             template = Template(latex_template.read())
             content = template.substitute(template_values)
 
-        with open("output.tex", "w") as latex_output:
+        with open(self.conf.latex_output, "w") as latex_output:
             latex_output.write(content)
 
-    def save_plot(self, legend: Dict[str, str]) -> None:
-        """TODO."""
-        template_values = self.prepare_values(legend)
+    def save_plot(self) -> None:
+        """Prepare the bubble plot specific values and fill the Latex template with them."""
+        year_color = year_color_mapping(self.years)
+        template_values = self.prepare_values(year_color)
         self.write(template_values)
 
 
@@ -518,4 +579,4 @@ def build_and_save_plots(
         writer_csv = CSVWriter(plot, years, conf)
         writer_csv.save_plot()
         writer_latex = LatexBubblePlotWriter(plot, years, conf)
-        writer_latex.save_plot({key: key for key in plot_plan})
+        writer_latex.save_plot()

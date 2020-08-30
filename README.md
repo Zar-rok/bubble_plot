@@ -9,8 +9,8 @@ Example of a bubble plot generate with the following [Latex code](example/exampl
 ## WIP
 
 - [X] Implement, document, and test the bubble plot data generation.
+- [X] Generate the Latex source code parametrised for a given bubble plot.
 - [ ] Provide an example of interaction with the `bubble_plot` module.
-- [ ] Generate the Latex source code parametrised for a given bubble plot.
 
 ## Documentation generation
 
