@@ -22,7 +22,7 @@
     colormap name=yearcolor,
     colormap access=piecewise const,
     scatter/@pre marker code/.code={
-        \pgfplotstablegetelem{\coordindex}{score_year}\of{\datatable}
+        \pgfplotstablegetelem{\coordindex}{years}\of{\datatable}
         \pgfplotscolormapdefinemappedcolor{\pgfplotsretval}
         \pgfmathparse{\pgfplotspointmetatransformed / 1000 * 5 + 1}
         \def\markopts{
