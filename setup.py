@@ -19,5 +19,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    test_suite='test_bubble_plot.py'
-)
+    test_suite='test_bubble_plot.py',
+    extras_require={
+        'example': ['pybtex']
+    })
