@@ -51,12 +51,14 @@ class TestSplitXAxis(TestCase):
         entry = {"Z": "pouet", "Y": "hoho"}
         regex = "Unkown facet named: 'X' on the x axis"
         self.assertRaisesRegex(
-            KeyError, regex, self.x_axis.update, entry, "2020", "Y")
+            KeyError, regex, self.x_axis.update, entry, "2020", "Y"
+        )
 
         entry = {"X": "pouet", "Z": "hoho"}
         regex = "Unkown facet named: 'Y' on the y axis"
         self.assertRaisesRegex(
-            KeyError, regex, self.x_axis.update, entry, "2020", "Y")
+            KeyError, regex, self.x_axis.update, entry, "2020", "Y"
+        )
 
 
 class TestBubblePlot(TestCase):
@@ -80,8 +82,15 @@ class TestBubblePlot(TestCase):
 
 class TestCSVWriter(TestCase):
     def setUp(self):
-        self.conf = Config(1, 2, "year", ["iy", "ix", "nbr", "year", "y", "x"],
-                           "template.tex", "output.tex")
+        self.output_dir = "output_dir"
+        self.conf = Config(
+            1,
+            2,
+            "year",
+            ["iy", "ix", "nbr", "year", "y", "x"],
+            "template.tex",
+            self.output_dir,
+        )
         self.years = {"2018", "2019", "2020"}
         self.entries = [
             {"Y": "0", "X_left": "1", "X_right": "2", "year": "2018"},
@@ -123,9 +132,14 @@ class TestCSVWriter(TestCase):
     def test_write(self):
         mock = mock_open()
         with patch("bubble_plot.open", mock):
-            self.writer.write(self.data, list(
-                self.x_mapping.keys()), list(self.y_mapping.keys()))
-        mock.assert_called_once_with(f"{self.bubble_plot}.csv", "w")
+            self.writer.write(
+                self.data,
+                list(self.x_mapping.keys()),
+                list(self.y_mapping.keys()),
+            )
+        mock.assert_called_once_with(
+            f"{self.output_dir}/{self.bubble_plot}.csv", "w"
+        )
 
         exps = [
             ("iy,ix,nbr,year,y,x\r\n"),
@@ -143,8 +157,15 @@ class TestCSVWriter(TestCase):
 
 class TestLatexBubblePlotWriter(TestCase):
     def setUp(self):
-        self.conf = Config(1, 2, "year", ["iy", "ix", "nbr", "year", "y", "x"],
-                           "template.tex", "output.tex")
+        self.output_dir = "output_dir"
+        self.conf = Config(
+            1,
+            2,
+            "year",
+            ["iy", "ix", "nbr", "year", "y", "x"],
+            "template.tex",
+            self.output_dir,
+        )
         self.years = {"2018", "2019", "2020"}
         self.entries = [
             {"Y": "0", "X_left": "1", "X_right": "2", "year": "2018"},
@@ -167,20 +188,25 @@ class TestLatexBubblePlotWriter(TestCase):
         for entry in self.entries:
             self.bubble_plot.update(entry, entry[self.conf.class_year])
 
-        mock = mock_open(read_data="ix\n" +
-                         '\n'.join(map(str, self.x_mapping.values())))
+        mock = mock_open(
+            read_data="ix\n" + "\n".join(map(str, self.x_mapping.values()))
+        )
         with patch("bubble_plot.open", mock):
             self.writer = LatexBubblePlotWriter(
-                self.bubble_plot, self.years, self.conf)
+                self.bubble_plot, self.years, self.conf
+            )
         self.writer.x_indices = tuple(x for (_, x, _, _) in self.data)
 
     def test_init(self):
-        mock = mock_open(read_data="ix\n" +
-                         '\n'.join(map(str, self.x_mapping.values())))
+        mock = mock_open(
+            read_data="ix\n" + "\n".join(map(str, self.x_mapping.values()))
+        )
         with patch("bubble_plot.open", mock):
             LatexBubblePlotWriter(self.bubble_plot, self.years, self.conf)
-        self.assertEqual((f"{self.bubble_plot}.csv", 'r'),
-                         mock.call_args_list[0][0])
+        self.assertEqual(
+            (f"{self.output_dir}/{self.bubble_plot}.csv", "r"),
+            mock.call_args_list[0][0],
+        )
 
     def test_year_color(self):
         years_len = len(self.years)
@@ -188,21 +214,24 @@ class TestLatexBubblePlotWriter(TestCase):
         self.assertEqual(years_len, len(set(year_color)))
 
     def test_prepare_values(self):
-        expect = ("define_color_year",
-                  "color_map_year",
-                  "color_value_label",
-                  "y_facet_label",
-                  "x_left_facet_label",
-                  "x_right_facet_label",
-                  "x_min",
-                  "x_max",
-                  "csv_data_file",
-                  "csv_col_y_indices",
-                  "csv_col_x_indices",
-                  "csv_col_occurence")
+        expect = (
+            "define_color_year",
+            "color_map_year",
+            "color_value_label",
+            "y_facet_label",
+            "x_left_facet_label",
+            "x_right_facet_label",
+            "x_min",
+            "x_max",
+            "csv_data_file",
+            "csv_col_y_indices",
+            "csv_col_x_indices",
+            "csv_col_occurence",
+        )
         year_color = year_color_mapping(self.years)
-        self.assertEqual(expect, tuple(
-            self.writer.prepare_values(year_color).keys()))
+        self.assertEqual(
+            expect, tuple(self.writer.prepare_values(year_color).keys())
+        )
 
     def test_write(self):
         template_values = {
@@ -222,10 +251,13 @@ class TestLatexBubblePlotWriter(TestCase):
         mock = mock_open()
         with patch("bubble_plot.open", mock):
             self.writer.write(template_values)
-        self.assertEqual((f"{self.conf.latex_template}",
-                          'r'), mock.call_args_list[0][0])
-        self.assertEqual((f"{self.conf.latex_output}", 'w'),
-                         mock.call_args_list[1][0])
+        self.assertEqual(
+            (f"{self.conf.latex_template}", "r"), mock.call_args_list[0][0]
+        )
+        self.assertEqual(
+            (f"{self.conf.output_dir}/{self.writer.plot}.tex", "w"),
+            mock.call_args_list[1][0],
+        )
 
 
 class TestAPI(TestCase):
@@ -236,14 +268,22 @@ class TestAPI(TestCase):
             {"Y": "6", "X_left": "7", "X_right": "8", "year": "2019"},
         ]
 
-        self.conf = Config(1, 2, "year", ["iy", "ix", "nbr", "year", "y", "x"],
-                           "template.tex", "output.tex")
+        self.output_dir = "output_dir"
+        self.conf = Config(
+            1,
+            2,
+            "year",
+            ["iy", "ix", "nbr", "year", "y", "x"],
+            "template.tex",
+            self.output_dir,
+        )
 
         self.plot_plan = Facets("Y", "X_left", "X_right")
 
     def test_compute_occurences_from(self):
         plot, years = compute_occurences_from(
-            self.entries, self.plot_plan, self.conf)
+            self.entries, self.plot_plan, self.conf
+        )
 
         entries_len = len(self.entries)
         self.assertEqual(entries_len, len(plot.x_axis.left.bubbles))
@@ -255,5 +295,6 @@ class TestAPI(TestCase):
         mock = mock_open(read_data="ix\n-1\n0\n1")
         with patch("bubble_plot.open", mock):
             build_and_save_plots(
-                self.entries, [self.plot_plan] * number_plot, self.conf)
+                self.entries, [self.plot_plan] * number_plot, self.conf
+            )
         self.assertEqual(number_plot * 4, len(mock.call_args_list))
