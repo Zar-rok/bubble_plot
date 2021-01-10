@@ -94,20 +94,21 @@ class TestCSVWriter(TestCase):
         self.years = {"2018", "2019", "2020"}
         self.entries = [
             {"Y": "0", "X_left": "1", "X_right": "2", "year": "2018"},
-            {"Y": "3", "X_left": "4", "X_right": "5", "year": "2020"},
-            {"Y": "6", "X_left": "7", "X_right": "8", "year": "2019"},
+            {"Y": "3", "X_left": "4", "X_right": "4", "year": "2020"},
+            {"Y": "6", "X_left": "7", "X_right": "7", "year": "2019"},
         ]
         self.year_mapping = {"2018": 0, "2019": 500, "2020": 1000}
-        self.x_mapping = {"1": -4, "4": -3, "7": -2, "2": 2, "5": 3, "8": 4}
+        self.x_left_mapping = {"1": -4, "4": -3, "7": -2}
+        self.x_right_mapping = {"2": 2, "4": 3, "7": 4}
         self.y_mapping = {"0": 0, "3": 1, "6": 2}
-        self.data = (
+        self.data = [
             (0, -4, 1, 0),
             (1, -3, 1, 1000),
             (2, -2, 1, 500),
             (0, 2, 1, 0),
             (1, 3, 1, 1000),
             (2, 4, 1, 500),
-        )
+        ]
         self.facets = Facets("Y", "X_left", "X_right")
         self.bubble_plot = BubblePlot(self.facets)
         for entry in self.entries:
@@ -119,13 +120,21 @@ class TestCSVWriter(TestCase):
         self.assertEqual(self.year_mapping, mapping)
 
     def test_compute_labels_indices_mapping(self):
-        x_mapping, y_mapping = self.writer.compute_labels_indices_mapping()
+        (
+            x_left_mapping,
+            x_right_mapping,
+            y_mapping,
+        ) = self.writer.compute_labels_indices_mapping()
         self.assertEqual(self.y_mapping, y_mapping)
-        self.assertEqual(self.x_mapping, x_mapping)
+        self.assertEqual(self.x_left_mapping, x_left_mapping)
+        self.assertEqual(self.x_right_mapping, x_right_mapping)
 
     def test_prepared_bubbles_data(self):
         prepared_data = self.writer.prepared_bubbles_data(
-            self.x_mapping, self.y_mapping, self.year_mapping
+            self.x_left_mapping,
+            self.x_right_mapping,
+            self.y_mapping,
+            self.year_mapping,
         )
         self.assertEqual(self.data, prepared_data)
 
@@ -134,7 +143,8 @@ class TestCSVWriter(TestCase):
         with patch("bubble_plot.open", mock):
             self.writer.write(
                 self.data,
-                list(self.x_mapping.keys()),
+                list(self.x_left_mapping.keys())
+                + list(self.x_right_mapping.keys()),
                 list(self.y_mapping.keys()),
             )
         mock.assert_called_once_with(
@@ -147,8 +157,8 @@ class TestCSVWriter(TestCase):
             ("1,-3,1,1000,4,3\r\n"),
             ("2,-2,1,500,7,6\r\n"),
             ("0,2,1,0,2,\r\n"),
-            ("1,3,1,1000,5,\r\n"),
-            ("2,4,1,500,8,\r\n"),
+            ("1,3,1,1000,4,\r\n"),
+            ("2,4,1,500,7,\r\n"),
         ]
         handle = mock()
         for expected, (args, _) in zip(exps, handle.write.call_args_list):

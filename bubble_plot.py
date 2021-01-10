@@ -293,15 +293,16 @@ class CSVWriter(NamedTuple):
 
     def compute_labels_indices_mapping(
         self,
-    ) -> Tuple[Dict[str, int], Dict[str, int]]:
+    ) -> Tuple[Dict[str, int], Dict[str, int], Dict[str, int]]:
         """
         Compute the mapping between labels and their indices.
 
         Returns
         -------
-        Tuple[Dict[str, int], Dict[str, int]]
+        Tuple[Dict[str, int], Dict[str, int], Dict[str, int]]
             The mapping between:
-                - the x tick labels and their indices.
+                - the left x tick labels and their indices.
+                - the right x tick labels and their indices.
                 - the y tick labels and their indices.
         """
 
@@ -336,13 +337,12 @@ class CSVWriter(NamedTuple):
         # From 0 to N-1
         y_mapping = {label: i for i, label in enumerate(labels_y)}
 
-        x_mapping = {**x_left_mapping, **x_right_mapping}
-
-        return x_mapping, y_mapping
+        return x_left_mapping, x_right_mapping, y_mapping
 
     def prepared_bubbles_data(
         self,
-        x_mapping: Dict[str, int],
+        x_left_mapping: Dict[str, int],
+        x_right_mapping: Dict[str, int],
         y_mapping: Dict[str, int],
         year_mapping: Dict[str, int],
     ) -> Sequence[Tuple[int, int, int, int]]:
@@ -351,8 +351,10 @@ class CSVWriter(NamedTuple):
 
         Parameters
         ----------
-        x_mapping: Dict[str, int]
-            The x tick labels and their indices.
+        x_left_mapping: Dict[str, int]
+            The left x tick labels and their indices.
+        x_right_mapping: Dict[str, int]
+            The right x tick labels and their indices.
         y_mapping: Dict[str, int]
             The y tick labels and their indices.
         year_mapping: Dict[str, int]
@@ -365,22 +367,25 @@ class CSVWriter(NamedTuple):
             The columns are, in order:
             - The index of the y tick label related to the bubble.
             - The index of the x tick label related to the bubble.
-            - The number of occurence of the bubble.
+            - The number of occurrence of the bubble.
             - The earliest publication year related to the bubble.
         """
-        bubbles = {
-            **self.plot.x_axis.left.bubbles,
-            **self.plot.x_axis.right.bubbles,
-        }
-        return tuple(
-            (
-                y_mapping[bubble.label_y],
-                x_mapping[bubble.label_x],
-                occurence.occurence,
-                year_mapping[occurence.year],
-            )
-            for bubble, occurence in bubbles.items()
+        axis_mapping = (
+            (self.plot.x_axis.left, x_left_mapping),
+            (self.plot.x_axis.right, x_right_mapping),
         )
+        data = []
+        for axis, x_mapping in axis_mapping:
+            for bubble, occurence in axis.bubbles.items():
+                data.append(
+                    (
+                        y_mapping[bubble.label_y],
+                        x_mapping[bubble.label_x],
+                        occurence.occurence,
+                        year_mapping[occurence.year],
+                    )
+                )
+        return data
 
     def write(
         self,
@@ -435,14 +440,20 @@ class CSVWriter(NamedTuple):
         Prepared bubble plot data for the CSV file. And write data and
         labels into a file.
         """
-        x_mapping, y_mapping = self.compute_labels_indices_mapping()
+        (
+            x_left_mapping,
+            x_right_mapping,
+            y_mapping,
+        ) = self.compute_labels_indices_mapping()
         year_score = self.compute_year_score_mapping()
         bubbles_data = self.prepared_bubbles_data(
-            x_mapping, y_mapping, year_score
+            x_left_mapping, x_right_mapping, y_mapping, year_score
         )
         sorted_bubbles_data = sorted(bubbles_data, key=itemgetter(1))
         self.write(
-            sorted_bubbles_data, list(y_mapping.keys()), list(x_mapping.keys())
+            sorted_bubbles_data,
+            list(y_mapping.keys()),
+            list(x_left_mapping.keys()) + list(x_right_mapping.keys()),
         )
 
 
