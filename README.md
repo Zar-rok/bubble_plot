@@ -12,21 +12,24 @@ The following figure display a bubble plot generated with the following [Latex c
 
 ## How to use the `bubble_plot` module?
 
-Please follow the instructions of the [Jupyter](https://jupyter.org/) notebook `usage_example.ipynb`.
+Please follow the instructions of the [Jupyter](https://jupyter.org/) notebook [usage_example.ipynb](example/usage_example.ipynb).
 
 ## WIP
 
 - [X] Implement, document, and test the bubble plot data generation.
 - [X] Generate the Latex source code parametrised for a given bubble plot.
 - [X] Provide an example of interaction with the `bubble_plot` module.
-- [ ] Find a way to factorise all the fields name (e.g. iy, ix, years, etc.) into one file.
-- [ ] Remove all IO interactions from the `bubble_plot` module.
+- [ ] Document the Latex template variable & keys to manually change.
+
+To think about:
+- [ ] The field `years` is in the `.sty`. How to extract it to be configurable?
+- [ ] Remove all IO interactions from the `bubble_plot` module?
 
 ## Documentation generation
 
 First install `sphinx`. For example via: `pip3 install sphinx`.
 
-Then, from `docs/` run: `make html && open _build/html/index.html`
+Then, from [docs/](docs/) run: `make html && open _build/html/index.html`
 
 ## Run tests
 
