@@ -21,4 +21,4 @@ help:
 html: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	# Remove the default empty description of the NamedTuple members.
-	vim -c 'g/<dd><\/dd><\/dl>/-4,.d' -c 'wq' "_build/html/index.html"
+	vi -c 'g/<dd><\/dd><\/dl>/-4,.d' -c 'wq' "_build/html/index.html"
