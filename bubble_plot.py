@@ -8,7 +8,6 @@ import colorsys
 import csv
 import os
 from itertools import zip_longest
-from operator import attrgetter, itemgetter
 from string import Template
 from typing import Dict, NamedTuple, Sequence, Set, Tuple
 
@@ -45,7 +44,7 @@ class Config(NamedTuple):
     class_year: str
         Label representing the publication year.
     field_names: Sequence[str]
-        Name of the columns for the ouput file of the bubble plot.
+        Name of the columns for the output file of the bubble plot.
     latex_template: str
         Path to the Latex template.
     output_dir: str
@@ -60,19 +59,19 @@ class Config(NamedTuple):
     output_dir: str
 
 
-class Occurence:
+class Occurrence:
     """
-    Compute the occurence of a bubble.
+    Compute the occurrence of a bubble.
 
     Attributes
     ----------
-    occurence: int
-        Occurence of a bubble.
+    occurrence: int
+        Occurrence of a bubble.
     year: str
         Earliest year from entries related to the bubble.
     """
 
-    __slots__ = ("occurence", "year")
+    __slots__ = ("occurrence", "year")
 
     def __init__(self, year: str):
         """
@@ -81,26 +80,26 @@ class Occurence:
         year: str
             Year of the first entry related to the bubble.
         """
-        self.occurence: int = 1
+        self.occurrence: int = 1
         self.year: str = year
 
     def update(self, new_year: str):
         """
-        Update the occurences and save the earliest publish year.
+        Update the occurrences and save the earliest publish year.
 
         Parameters
         ----------
         new_year: str
             New publish year to update `year` with if it's less than the current year.
         """
-        self.occurence += 1
+        self.occurrence += 1
         self.year = min(self.year, new_year)
 
     def __str__(self):
-        return f"Occurence: {self.occurence}, Year: {self.year}"
+        return f"Occurrence: {self.occurrence}, Year: {self.year}"
 
     def __repr__(self):
-        return f"{self.__class__.__name__}{(self.occurence, self.year)}"
+        return f"{self.__class__.__name__}{(self.occurrence, self.year)}"
 
 
 class Bubble(NamedTuple):
@@ -126,7 +125,7 @@ class Bubble(NamedTuple):
 
 class SplitXAxis(NamedTuple):
     """
-    Facet on one side of the splited x axis.
+    Facet on one side of the splitted x axis.
 
     Attributes
     ----------
@@ -137,7 +136,7 @@ class SplitXAxis(NamedTuple):
     """
 
     facet: str
-    bubbles: Dict[Bubble, Occurence]
+    bubbles: Dict[Bubble, Occurrence]
 
     def update(self, entry: Dict[str, str], year: str, y_axis: str) -> None:
         """
@@ -156,20 +155,20 @@ class SplitXAxis(NamedTuple):
             label_x = entry[self.facet]
         except KeyError as error:
             raise KeyError(
-                f"Unkown facet named: {error} on the x axis"
+                f"Unknown facet named: {error} on the x axis"
             ) from error
         try:
             label_y = entry[y_axis]
         except KeyError as error:
             raise KeyError(
-                f"Unkown facet named: {error} on the y axis"
+                f"Unknown facet named: {error} on the y axis"
             ) from error
 
         bubble = Bubble(label_x=label_x, label_y=label_y)
         if bubble in self.bubbles:
             self.bubbles[bubble].update(year)
         else:
-            self.bubbles[bubble] = Occurence(year)
+            self.bubbles[bubble] = Occurrence(year)
 
 
 class XAxis(NamedTuple):
@@ -234,7 +233,7 @@ class BubblePlot:
 
     def update(self, entry: Dict[str, str], year: str) -> None:
         """
-        Update the bubbles occurences of the plot.
+        Update the bubbles occurrences of the plot.
 
         Parameters
         ----------
@@ -269,7 +268,7 @@ class CSVWriter(NamedTuple):
 
     def compute_year_score_mapping(self) -> Dict[str, int]:
         """
-        Compute the mapping between years and color map scores. The scores are mapped in
+        Compute the mapping between years and colour map scores. The scores are mapped in
         chronological order of the years.
 
         Returns
@@ -279,7 +278,7 @@ class CSVWriter(NamedTuple):
 
         Notes
         -----
-        The color map score is in the interval [0-1000].
+        The colour map score is in the interval [0-1000].
         See paragraph ``Colormap Input Format Reference`` in Section 4.7.6 of the
         Latex `pgfplots <https://ctan.org/pkg/pgfplots>`_ package.
         """
@@ -307,7 +306,7 @@ class CSVWriter(NamedTuple):
         """
 
         labels_x_left = sorted(
-            set(map(attrgetter("label_x"), self.plot.x_axis.left.bubbles))
+            set(b.label_x for b in self.plot.x_axis.left.bubbles)
         )
         labels_x_left_len = len(labels_x_left)
         # From -N to -conf.x_left_offset
@@ -317,7 +316,7 @@ class CSVWriter(NamedTuple):
         }
 
         labels_x_right = sorted(
-            set(map(attrgetter("label_x"), self.plot.x_axis.right.bubbles))
+            set(b.label_x for b in self.plot.x_axis.right.bubbles)
         )
         # From conf.x_left_offset to N
         x_right_mapping = {
@@ -327,11 +326,9 @@ class CSVWriter(NamedTuple):
 
         labels_y = sorted(
             set(
-                map(
-                    attrgetter("label_y"),
-                    list(self.plot.x_axis.right.bubbles)
-                    + list(self.plot.x_axis.left.bubbles),
-                )
+                b.label_y
+                for b in list(self.plot.x_axis.right.bubbles)
+                + list(self.plot.x_axis.left.bubbles)
             )
         )
         # From 0 to N-1
@@ -374,18 +371,16 @@ class CSVWriter(NamedTuple):
             (self.plot.x_axis.left, x_left_mapping),
             (self.plot.x_axis.right, x_right_mapping),
         )
-        data = []
-        for axis, x_mapping in axis_mapping:
-            for bubble, occurence in axis.bubbles.items():
-                data.append(
-                    (
-                        y_mapping[bubble.label_y],
-                        x_mapping[bubble.label_x],
-                        occurence.occurence,
-                        year_mapping[occurence.year],
-                    )
-                )
-        return data
+        return [
+            (
+                y_mapping[bubble.label_y],
+                x_mapping[bubble.label_x],
+                occurence.occurrence,
+                year_mapping[occurence.year],
+            )
+            for axis, x_mapping in axis_mapping
+            for bubble, occurence in axis.bubbles.items()
+        ]
 
     def write(
         self,
@@ -449,7 +444,7 @@ class CSVWriter(NamedTuple):
         bubbles_data = self.prepared_bubbles_data(
             x_left_mapping, x_right_mapping, y_mapping, year_score
         )
-        sorted_bubbles_data = sorted(bubbles_data, key=itemgetter(1))
+        sorted_bubbles_data = sorted(bubbles_data, key=lambda t: t[1])
         self.write(
             sorted_bubbles_data,
             list(y_mapping.keys()),
@@ -457,14 +452,19 @@ class CSVWriter(NamedTuple):
         )
 
 
-def year_color_mapping(years: Set[str]) -> Dict[str, str]:
+def year_color_mapping(years: Sequence[str]) -> Dict[str, str]:
     """
-    Affect a distinct (as much as possible) color to each year.
+    Affect a distinct (as much as possible) colour to each year.
+
+    Parameters
+    ----------
+    years: Sequence[str]
+        Publication years.
 
     Returns
     -------
     Dict[str, str]
-        Mapping between a year and the related color used for a bubble on the plot.
+        Mapping between a year and the related colour used for a bubble on the plot.
     """
     years_len = len(years)
     hsv_tuples = [(i * 1.0 / years_len, 0.5, 1) for i in range(years_len)]
@@ -483,7 +483,7 @@ class LatexBubblePlotWriter:
     ----------
     plot: BubblePlot
         Plot to prepare and format.
-    years: Set[str]
+    years: Sequence[str]
         Publication years.
     conf: Config
         Describe custom settings for the plots.
@@ -505,14 +505,15 @@ class LatexBubblePlotWriter:
             Describe custom settings for the plots.
         """
         self.plot: BubblePlot = plot
-        self.years: Set[str] = years
+        self.years: Sequence[str] = sorted(years)
         self.conf: Config = conf
         with open(
             os.path.join(self.conf.output_dir, f"{plot}.csv"), "r"
         ) as plot_data:
             reader = csv.DictReader(plot_data)
+            x_indice_field = conf.field_names[1]
             self.x_indices: Sequence[int] = tuple(
-                map(itemgetter(conf.field_names[1]), reader)
+                int(row[x_indice_field]) for row in reader
             )
 
     def prepare_values(self, year_color: Dict[str, str]) -> Dict[str, str]:
@@ -522,7 +523,7 @@ class LatexBubblePlotWriter:
         Parameters
         ----------
         year_color: Dict[str, str]
-            Mapping between a year and the related color used for a bubble on the plot.
+            Mapping between a year and the related colour used for a bubble on the plot.
 
         Returns
         -------
@@ -531,16 +532,14 @@ class LatexBubblePlotWriter:
         """
         return {
             "define_color_year": "\n".join(
-                [
-                    f"\\definecolor{{{year}}}{{rgb}}{{{year_color[year]}}}"
-                    for year in self.years
-                ]
+                f"\\definecolor{{{year}}}{{rgb}}{{{year_color[year]}}}"
+                for year in self.years
             ),
             "color_map_year": "\n\t\t".join(
-                [f"color=({year})," for year in self.years]
+                f"color=({year})," for year in self.years
             ),
             "color_value_label": ", ".join(
-                [f"{year}/{year}" for year in self.years]
+                f"{year}/{year}" for year in self.years
             ),
             "y_facet_label": self.plot.y_axis,
             "x_left_facet_label": self.plot.x_axis.left.facet,
@@ -550,7 +549,9 @@ class LatexBubblePlotWriter:
             "csv_data_file": f"{self.plot}.csv",
             "csv_col_y_indices": self.conf.field_names[0],
             "csv_col_x_indices": self.conf.field_names[1],
-            "csv_col_occurence": self.conf.field_names[2],
+            "csv_col_occurrence": self.conf.field_names[2],
+            "min_year": self.years[0],
+            "max_year": self.years[-1],
         }
 
     def write(self, template_values: Dict[str, str]) -> None:
@@ -582,7 +583,7 @@ def compute_occurences_from(
     entries: Sequence[Dict[str, str]], plot_plan: Facets, conf: Config
 ) -> Tuple[BubblePlot, Set[str]]:
     """
-    Compute the occurences of each value for the given labels.
+    Compute the occurrences of each value for the given labels.
 
     Parameters
     ----------

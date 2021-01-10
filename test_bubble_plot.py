@@ -9,7 +9,7 @@ from bubble_plot import (
     CSVWriter,
     Facets,
     LatexBubblePlotWriter,
-    Occurence,
+    Occurrence,
     SplitXAxis,
     build_and_save_plots,
     compute_occurences_from,
@@ -20,20 +20,20 @@ from bubble_plot import (
 class TestOccurence(TestCase):
     def setUp(self):
         self.year = "2020"
-        self.occu = Occurence(self.year)
+        self.occu = Occurrence(self.year)
 
     def test_init(self):
         self.assertEqual(self.year, self.occu.year)
-        self.assertEqual(1, self.occu.occurence)
+        self.assertEqual(1, self.occu.occurrence)
 
     def test_update(self):
         self.occu.update("2019")
         self.assertEqual("2019", self.occu.year)
-        self.assertEqual(2, self.occu.occurence)
+        self.assertEqual(2, self.occu.occurrence)
 
         self.occu.update("2021")
         self.assertNotEqual("2021", self.occu.year)
-        self.assertEqual(3, self.occu.occurence)
+        self.assertEqual(3, self.occu.occurrence)
 
 
 class TestSplitXAxis(TestCase):
@@ -49,13 +49,13 @@ class TestSplitXAxis(TestCase):
 
     def test_update_unkown_facet(self):
         entry = {"Z": "pouet", "Y": "hoho"}
-        regex = "Unkown facet named: 'X' on the x axis"
+        regex = "Unknown facet named: 'X' on the x axis"
         self.assertRaisesRegex(
             KeyError, regex, self.x_axis.update, entry, "2020", "Y"
         )
 
         entry = {"X": "pouet", "Z": "hoho"}
-        regex = "Unkown facet named: 'Y' on the y axis"
+        regex = "Unknown facet named: 'Y' on the y axis"
         self.assertRaisesRegex(
             KeyError, regex, self.x_axis.update, entry, "2020", "Y"
         )
@@ -220,7 +220,7 @@ class TestLatexBubblePlotWriter(TestCase):
 
     def test_year_color(self):
         years_len = len(self.years)
-        year_color = year_color_mapping(self.years)
+        year_color = year_color_mapping(list(self.years))
         self.assertEqual(years_len, len(set(year_color)))
 
     def test_prepare_values(self):
@@ -237,8 +237,10 @@ class TestLatexBubblePlotWriter(TestCase):
             "csv_col_y_indices",
             "csv_col_x_indices",
             "csv_col_occurence",
+            "min_year",
+            "max_year",
         )
-        year_color = year_color_mapping(self.years)
+        year_color = year_color_mapping(list(self.years))
         self.assertEqual(
             expect, tuple(self.writer.prepare_values(year_color).keys())
         )
@@ -256,7 +258,9 @@ class TestLatexBubblePlotWriter(TestCase):
             "csv_data_file": token_urlsafe(5),
             "csv_col_y_indices": token_urlsafe(5),
             "csv_col_x_indices": token_urlsafe(5),
-            "csv_col_occurence": token_urlsafe(5),
+            "csv_col_occurrence": token_urlsafe(5),
+            "min_year": token_urlsafe(5),
+            "max_year": token_urlsafe(5),
         }
         mock = mock_open()
         with patch("bubble_plot.open", mock):

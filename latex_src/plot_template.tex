@@ -38,7 +38,7 @@ ${define_color_year}
         ] table[
             x=${csv_col_x_indices},
             y=${csv_col_y_indices},
-            meta=${csv_col_occurence}
+            meta=${csv_col_occurrence}
         ] {\datatable};
       \end{axis}
 
@@ -48,7 +48,7 @@ ${define_color_year}
         \node[right=\osx mm of offset, draw=\outline{\colValue}, fill=\colValue, label={[align=center]below:\colLabel-}] (\colValue) {};
         \pgfmathsetmacro{\osx}{\osx + 12}
     }
-    \node[left=\xLeftXShift of 2018] {${x_left_facet_label}};
-    \node[right=\xRightXShift of 2017] {${x_right_facet_label}};
+    \node[left=\xLeftXShift of ${min_year}] {${x_left_facet_label}};
+    \node[right=\xRightXShift of ${max_year}] {${x_right_facet_label}};
 \end{tikzpicture}
 \end{document}
