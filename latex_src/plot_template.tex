@@ -2,6 +2,16 @@
 \documentclass{standalone}
 \usepackage{bubble_plot}
 
+% TODO: Find how to setup default values.
+%       Using \errmessage?
+\setlength{\xWidth}{7mm}
+\setlength{\yHeight}{1cm}
+\setlength{\ySpacing}{0.3pt}
+\setlength{\yearXShift}{3.5cm}
+\setlength{\yearYShift}{-1.4cm}
+\setlength{\xLeftXShift}{2.5cm}
+\setlength{\xRightXShift}{1.5cm}
+
 ${define_color_year}
 
 \pgfplotsset{
@@ -14,13 +24,13 @@ ${define_color_year}
 \pgfplotstableread[col sep=comma]{${csv_data_file}}{\datatable}
 \begin{tikzpicture}
     \begin{axis}[
-        x=7mm,
+        x=\xWidth,
         xmin=${x_min}, xmax=${x_max},
         xticklabels from table={\datatable}{x},
-        y=1cm,
+        y=\yHeight,
         ylabel={${y_facet_label}},
         yticklabels from table={\datatable}{y},
-        enlarge y limits={0.2},
+        enlarge y limits=\ySpacing,
     ]
         \addplot[
             scatter,
@@ -30,16 +40,15 @@ ${define_color_year}
             y=${csv_col_y_indices},
             meta=${csv_col_occurence}
         ] {\datatable};
-    \end{axis}
+      \end{axis}
 
-    \node[below=1cm of tickLabel 5] {${x_left_facet_label}};
-    \node[below=1cm of tickLabel 13] {${x_right_facet_label}};
-
-    \node (offset) at (6.25,-2) {};
+    \node[below=\yearXShift of yTickLabel-0, xshift=\yearYShift] (offset) {};
     \pgfmathsetmacro{\osx}{0}
     \foreach[remember=\osx as \osx] \colValue/\colLabel in {${color_value_label}}{
-        \node[right=\osx mm of offset, draw=\outline{\colValue}, fill=\colValue, label={[align=center]below:\colLabel-}] {};
+        \node[right=\osx mm of offset, draw=\outline{\colValue}, fill=\colValue, label={[align=center]below:\colLabel-}] (\colValue) {};
         \pgfmathsetmacro{\osx}{\osx + 12}
     }
+    \node[left=\xLeftXShift of 2018] {${x_left_facet_label}};
+    \node[right=\xRightXShift of 2017] {${x_right_facet_label}};
 \end{tikzpicture}
 \end{document}
