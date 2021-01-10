@@ -20,6 +20,7 @@ Please follow the instructions of the [Jupyter](https://jupyter.org/) notebook [
 - [X] Generate the Latex source code parametrised for a given bubble plot.
 - [X] Provide an example of interaction with the `bubble_plot` module.
 - [ ] Document the Latex template variable & keys to manually change.
+- [ ] Add support to custom colour scheme for the bubbles (e.g. using `seaborn`).
 
 To think about:
 - [ ] The field `years` is in the `.sty`. How to extract it to be configurable?
