@@ -1,54 +1,33 @@
-% Tested on overleaf.com
 \documentclass{standalone}
-\usepackage{bubble_plot}
+\usepackage{bubbleplot}
 
-% TODO: Find how to setup default values.
-%       Using \errmessage?
-\setlength{\xWidth}{7mm}
-\setlength{\yHeight}{1cm}
-\setlength{\ySpacing}{0.3pt}
-\setlength{\yearXShift}{3.5cm}
-\setlength{\yearYShift}{-1.4cm}
-\setlength{\xLeftXShift}{2.5cm}
-\setlength{\xRightXShift}{1.5cm}
-
-${define_color_year}
-
+% TODO: Is there a way to automate the colormap?
+%       https://tex.stackexchange.com/a/286837
+\definecolor{2017}{rgb}{1, 0.5, 0.5}
+\definecolor{2018}{rgb}{0.5, 1, 0.5}
+\definecolor{2019}{rgb}{0.5, 0.5, 1}
 \pgfplotsset{
     colormap={yearcolor}{
-        ${color_map_year}
+      color=(2017),
+      color=(2018),
+      color=(2019),
     }
 }
 
 \begin{document}
-\pgfplotstableread[col sep=comma]{${csv_data_file}}{\datatable}
-\begin{tikzpicture}
-    \begin{axis}[
-        x=\xWidth,
-        xmin=${x_min}, xmax=${x_max},
-        xticklabels from table={\datatable}{x},
-        y=\yHeight,
-        ylabel={${y_facet_label}},
-        yticklabels from table={\datatable}{y},
-        enlarge y limits=\ySpacing,
-    ]
-        \addplot[
-            scatter,
-            only marks,
-        ] table[
-            x=${csv_col_x_indices},
-            y=${csv_col_y_indices},
-            meta=${csv_col_occurrence}
-        ] {\datatable};
-      \end{axis}
 
-    \node[below=\yearXShift of yTickLabel-0, xshift=\yearYShift] (offset) {};
-    \pgfmathsetmacro{\osx}{0}
-    \foreach[remember=\osx as \osx] \colValue/\colLabel in {${color_value_label}}{
-        \node[right=\osx mm of offset, draw=\outline{\colValue}, fill=\colValue, label={[align=center]below:\colLabel-}] (\colValue) {};
-        \pgfmathsetmacro{\osx}{\osx + 12}
-    }
-    \node[left=\xLeftXShift of ${min_year}] {${x_left_facet_label}};
-    \node[right=\xRightXShift of ${max_year}] {${x_right_facet_label}};
-\end{tikzpicture}
+\bubbleplot[%
+    width=7mm,
+    height=1cm,
+    xmin=-10,
+    xmax=8,
+    enlarge y limits=0.3,
+    ylabel=Snakes,
+    year x shift=-1.4cm,
+    year y shift=3.5cm,
+    x left label=Fishes,
+    x left label shift=3cm,
+    x right label=Birds,
+    x right label shift=2cm,
+]{Fishes_Snakes_Birds.csv}{2017, 2018, 2019}
 \end{document}
