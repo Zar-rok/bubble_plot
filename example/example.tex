@@ -1,84 +1,31 @@
-% Tested on overleaf.com
-\documentclass[tikz]{standalone}
-\usetikzlibrary{positioning}
+\documentclass{standalone}
+\usepackage{bubbleplot}
 
-\usepackage{pgfplots}
-\usepackage{pgfplotstable}
-
-\definecolor{2017}{rgb}{0.9101268742791234, 0.9649365628604383, 0.6956401384083045}
-\definecolor{2018}{rgb}{0.6984544405997694, 0.8818608227604767, 0.7138485198000769}
-\definecolor{2019}{rgb}{0.39601691657054977, 0.7660745866974241, 0.7481430219146482}
-
-\newcommand*{\outline}[1]{#1!50!black}
-
+\definecolor{2017}{rgb}{1, 0.5, 0.5}
+\definecolor{2018}{rgb}{0.5, 1, 0.5}
+\definecolor{2019}{rgb}{0.5, 0.5, 1}
 \pgfplotsset{
-    compat=1.15,
-    grid=major,
-    major grid style={dashed},
-    point meta=explicit,
-    xtick=data,
-    xticklabel style={font=\scriptsize, align=center, anchor=north east, rotate=70, name=tickLabel \ticknum},
-    ytick=data,
-    yticklabel style={fill=white, inner sep=1.5pt, font=\scriptsize, above=0.5mm},
-    ylabel style={at={(ticklabel* cs:1,0)}, rotate=-90, anchor=south},
-    axis y line*=middle,
     colormap={yearcolor}{
-        color=(2017),
-        color=(2018),
-        color=(2019),
-    },
-    colormap name=yearcolor,
-    colormap access=piecewise const,
-    scatter/@pre marker code/.code={
-        \pgfplotstablegetelem{\coordindex}{score_year}\of{\datatable}
-        \pgfplotscolormapdefinemappedcolor{\pgfplotsretval}
-        \pgfmathparse{\pgfplotspointmetatransformed / 1000 * 5 + 1}
-        \def\markopts{
-            mark=text,
-            text mark=\pgfmathprintnumber{\pgfplotspointmeta},
-            text mark as node=true,
-            text mark style={
-                circle,
-                font=\tiny,
-                draw=\outline{mapped color},
-                fill=mapped color,
-                inner sep=\pgfmathresult
-            }
-        }
-        \expandafter\scope\expandafter[\markopts]
-    },
+      color=(2017),
+      color=(2018),
+      color=(2019),
+    }
 }
 
 \begin{document}
-\pgfplotstableread[col sep=comma]{test.csv}{\datatable}
-\begin{tikzpicture}
-    \begin{axis}[
-        x=7mm,
-        xmin=-11, xmax=8,
-        xticklabels from table={\datatable}{x},
-        y=1cm,
-        ylabel={Y facet},
-        yticklabels from table={\datatable}{y},
-        enlarge y limits={0.2},
-    ]
-        \addplot[
-            scatter,
-            only marks,
-        ] table[
-            x=ix,
-            y=iy,
-            meta=nbr
-        ] {\datatable};
-    \end{axis}
 
-    \node[below=1cm of tickLabel 5] {X left facet};
-    \node[below=1cm of tickLabel 13] {X right facet};
-
-    \node (offset) at (6.25,-2) {};
-    \pgfmathsetmacro{\osx}{0}
-    \foreach[remember=\osx as \osx] \colValue/\colLabel in {2017/2017, 2018/2018, 2019/2019}{
-        \node[right=\osx mm of offset, draw=\outline{\colValue}, fill=\colValue, label={[align=center]below:\colLabel-}] {};
-        \pgfmathsetmacro{\osx}{\osx + 12}
-    }
-\end{tikzpicture}
+\bubbleplot[%
+    width=7mm,
+    height=1cm,
+    xmin=-10,
+    xmax=8,
+    enlarge y limits=0.3,
+    ylabel=Snakes,
+    year x shift=-1.4cm,
+    year y shift=3.5cm,
+    x left label=Fishes,
+    x left label shift=3cm,
+    x right label=Birds,
+    x right label shift=2cm,
+]{Fishes_Snakes_Birds.csv}{2017, 2018, 2019}
 \end{document}
