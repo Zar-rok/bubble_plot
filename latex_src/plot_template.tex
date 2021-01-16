@@ -1,33 +1,30 @@
 \documentclass{standalone}
 \usepackage{bubbleplot}
 
-% TODO: Is there a way to automate the colormap?
-%       https://tex.stackexchange.com/a/286837
-\definecolor{2017}{rgb}{1, 0.5, 0.5}
-\definecolor{2018}{rgb}{0.5, 1, 0.5}
-\definecolor{2019}{rgb}{0.5, 0.5, 1}
+${define_color_year}
+
 \pgfplotsset{
     colormap={yearcolor}{
-      color=(2017),
-      color=(2018),
-      color=(2019),
+        ${color_map_year}
     }
 }
 
 \begin{document}
-
 \bubbleplot[%
-    width=7mm,
-    height=1cm,
-    xmin=-10,
-    xmax=8,
-    enlarge y limits=0.3,
-    ylabel=Snakes,
-    year x shift=-1.4cm,
-    year y shift=3.5cm,
-    x left label=Fishes,
-    x left label shift=3cm,
-    x right label=Birds,
-    x right label shift=2cm,
-]{Fishes_Snakes_Birds.csv}{2017, 2018, 2019}
-\end{document}
+    %width=,
+    %height=,
+    xmin=${x_min},
+    xmax=${x_max},
+    ylabel=${y_facet_label},
+    x index field=${csv_col_x_indices},
+    y index field=${csv_col_y_indices},
+    %x field=, % TODO: fill via Python
+    %y field=, % TODO: file via Python
+    meta=${csv_col_occurence},
+    %year x shift=,
+    %year y shift=,
+    x left label=${x_left_facet_label},
+    %x left label shift=,
+    x right label=${x_right_facet_label},
+    %x right label shift=,
+]{${csv_data_file}}{${color_value_label}}
