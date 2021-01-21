@@ -225,20 +225,21 @@ class TestLatexBubblePlotWriter(TestCase):
 
     def test_prepare_values(self):
         expect = (
-            "define_color_year",
-            "color_map_year",
-            "color_value_label",
-            "y_facet_label",
-            "x_left_facet_label",
-            "x_right_facet_label",
-            "x_min",
-            "x_max",
-            "csv_data_file",
-            "csv_col_y_indices",
-            "csv_col_x_indices",
-            "csv_col_occurence",
-            "min_year",
-            "max_year",
+            "defineColorsYear",
+            "setColorsYear",
+            "xMin",
+            "xMax",
+            "yLabel",
+            "meta",
+            "xField",
+            "xIndexField",
+            "yField",
+            "yIndexField",
+            "yearField",
+            "xLeftLabel",
+            "xRightLabel",
+            "CSVDataFile",
+            "colorsYear",
         )
         year_color = year_color_mapping(list(self.years))
         self.assertEqual(
@@ -247,20 +248,21 @@ class TestLatexBubblePlotWriter(TestCase):
 
     def test_write(self):
         template_values = {
-            "define_color_year": [token_urlsafe(5) for _ in self.years],
-            "color_map_year": [token_urlsafe(5) for _ in self.years],
-            "color_value_label": [token_urlsafe(5) for _ in self.years],
-            "y_facet_label": token_urlsafe(5),
-            "x_left_facet_label": token_urlsafe(5),
-            "x_right_facet_label": token_urlsafe(5),
-            "x_min": token_urlsafe(5),
-            "x_max": token_urlsafe(5),
-            "csv_data_file": token_urlsafe(5),
-            "csv_col_y_indices": token_urlsafe(5),
-            "csv_col_x_indices": token_urlsafe(5),
-            "csv_col_occurrence": token_urlsafe(5),
-            "min_year": token_urlsafe(5),
-            "max_year": token_urlsafe(5),
+            "defineColorsYear": [token_urlsafe(5) for _ in self.years],
+            "setColorsYear": [token_urlsafe(5) for _ in self.years],
+            "xMin": token_urlsafe(5),
+            "xMax": token_urlsafe(5),
+            "yLabel": token_urlsafe(5),
+            "meta": token_urlsafe(5),
+            "xField": token_urlsafe(5),
+            "xIndexField": token_urlsafe(5),
+            "yField": token_urlsafe(5),
+            "yIndexField": token_urlsafe(5),
+            "yearField": token_urlsafe(5),
+            "xLeftLabel": token_urlsafe(5),
+            "xRightLabel": token_urlsafe(5),
+            "CSVDataFile": token_urlsafe(5),
+            "colorsYear": [token_urlsafe(5) for _ in self.years],
         }
         mock = mock_open()
         with patch("bubble_plot.open", mock):

@@ -531,27 +531,26 @@ class LatexBubblePlotWriter:
             Values to fill the Latex template with.
         """
         return {
-            "define_color_year": "\n".join(
+            "defineColorsYear": "\n".join(
                 f"\\definecolor{{{year}}}{{rgb}}{{{year_color[year]}}}"
                 for year in self.years
             ),
-            "color_map_year": "\n\t\t".join(
+            "setColorsYear": "\n    ".join(
                 f"color=({year})," for year in self.years
             ),
-            "color_value_label": ", ".join(
-                f"{year}/{year}" for year in self.years
-            ),
-            "y_facet_label": self.plot.y_axis,
-            "x_left_facet_label": self.plot.x_axis.left.facet,
-            "x_right_facet_label": self.plot.x_axis.right.facet,
-            "x_min": str(min(map(int, self.x_indices))),
-            "x_max": str(max(map(int, self.x_indices))),
-            "csv_data_file": f"{self.plot}.csv",
-            "csv_col_y_indices": self.conf.field_names[0],
-            "csv_col_x_indices": self.conf.field_names[1],
-            "csv_col_occurrence": self.conf.field_names[2],
-            "min_year": self.years[0],
-            "max_year": self.years[-1],
+            "xMin": str(min(map(int, self.x_indices))),
+            "xMax": str(max(map(int, self.x_indices))),
+            "yLabel": self.plot.y_axis,
+            "meta": self.conf.field_names[2],
+            "xField": self.conf.field_names[5],
+            "xIndexField": self.conf.field_names[1],
+            "yField": self.conf.field_names[4],
+            "yIndexField": self.conf.field_names[0],
+            "yearField": self.conf.field_names[3],
+            "xLeftLabel": self.plot.x_axis.left.facet,
+            "xRightLabel": self.plot.x_axis.right.facet,
+            "CSVDataFile": f"{self.plot}.csv",
+            "colorsYear": ", ".join(self.years),
         }
 
     def write(self, template_values: Dict[str, str]) -> None:

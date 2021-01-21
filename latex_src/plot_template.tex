@@ -1,30 +1,33 @@
 \documentclass{standalone}
 \usepackage{bubbleplot}
 
-${define_color_year}
+${defineColorsYear}
 
 \pgfplotsset{
-    colormap={yearcolor}{
-        ${color_map_year}
-    }
+  colormap={yearcolor}{
+    ${setColorsYear}
+  }
 }
 
 \begin{document}
 \bubbleplot[%
-    %width=,
-    %height=,
-    xmin=${x_min},
-    xmax=${x_max},
-    ylabel=${y_facet_label},
-    x index field=${csv_col_x_indices},
-    y index field=${csv_col_y_indices},
-    %x field=, % TODO: fill via Python
-    %y field=, % TODO: file via Python
-    meta=${csv_col_occurence},
-    %year x shift=,
-    %year y shift=,
-    x left label=${x_left_facet_label},
-    %x left label shift=,
-    x right label=${x_right_facet_label},
-    %x right label shift=,
-]{${csv_data_file}}{${color_value_label}}
+    %% width=,
+    %% height=,
+    xmin=${xMin},
+    xmax=${xMax},
+    ylabel=${yLabel},
+    meta=${meta},
+    x field=${xField},
+    %% enlarge y limits=,
+    x index field=${xIndexField},
+    y field=${yField},
+    y index field=${yIndexField},
+    year field=${yearField},
+    %% year x shift=,
+    %% year y shift=,
+    %% year padding=,
+    x left label=${xLeftLabel},
+    %% x left label shift=,
+    x right label=${xRightLabel},
+    %% x right label shift=,
+]{${CSVDataFile}}{${colorsYear}}

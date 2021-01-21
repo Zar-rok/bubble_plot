@@ -14,13 +14,13 @@
         xmin=\relax,
         xmax=\relax,
         ylabel=\relax,
-        meta=nbr,
-        x field=x,
+        meta=\relax,
+        x field=\relax,
         enlarge y limits=0.2,
-        x index field=ix,
-        y field=y,
-        y index field=iy,
-        year field=years,
+        x index field=\relax,
+        y field=\relax,
+        y index field=\relax,
+        year field=\relax,
         year x shift=\relax,
         year y shift=\relax,
         year padding=12,
@@ -53,7 +53,10 @@
 \newcommand{\raiseErrorWhenKeyIsNotInitialised}{
 \foreach \keyName/\keyValue in {%
     width/\width, height/\height, xmin/\xMin, xmax/\xMax,
-    ylabel/\yLabel, year x shift/\yearXShift, year y shift/\yearYShift,
+    ylabel/\yLabel, meta/\meta,
+    x field/\xField, x index field/\xIndexField,
+    y field/\yField, y index field/\yIndexField,
+    year field/\yearField, year x shift/\yearXShift, year y shift/\yearYShift,
     x left label/\xLeftLabel, x left label shift/\xLeftLabelShift,
     x right label/\xRightLabel, x right label shift/\xRightLabelShift
 }{\if\keyValue\relax\PackageError{bubbleplot}{The key "\keyName=" must be initialised!}{Define the key like this: \bubbleplot[\keyName=<value>]...}\fi}}
