@@ -49,6 +49,8 @@ class Config(NamedTuple):
         Path to the Latex template.
     output_dir: str
         Path where to save the generated files (i.e., CSV & TeX).
+    color_map: Sequence[Tuple[float, float, float]]
+        Colour map for years.
     """
 
     x_left_offset: int
@@ -57,6 +59,7 @@ class Config(NamedTuple):
     field_names: Sequence[str]
     latex_template: str
     output_dir: str
+    color_map: Sequence[Tuple[float, float, float]]
 
 
 class Occurrence:
@@ -452,27 +455,22 @@ class CSVWriter(NamedTuple):
         )
 
 
-def year_color_mapping(years: Sequence[str]) -> Dict[str, str]:
+def compute_color_map(years_len: int) -> Sequence[Tuple[float, float, float]]:
     """
     Affect a distinct (as much as possible) colour to each year.
 
     Parameters
     ----------
-    years: Sequence[str]
-        Publication years.
+    years_len: int
+        Number of publication years.
 
     Returns
     -------
-    Dict[str, str]
-        Mapping between a year and the related colour used for a bubble on the plot.
+    Sequence[Tuple[float, float, float]]
+        Colours used for bubbles in the plot.
     """
-    years_len = len(years)
     hsv_tuples = [(i * 1.0 / years_len, 0.5, 1) for i in range(years_len)]
-    rgb_tuples = tuple(
-        str(colorsys.hsv_to_rgb(*hsv)).translate({ord(c): None for c in "()"})
-        for hsv in hsv_tuples
-    )
-    return dict(zip(years, rgb_tuples))
+    return tuple(colorsys.hsv_to_rgb(*hsv) for hsv in hsv_tuples)
 
 
 class LatexBubblePlotWriter:
@@ -516,13 +514,15 @@ class LatexBubblePlotWriter:
                 int(row[x_indice_field]) for row in reader
             )
 
-    def prepare_values(self, year_color: Dict[str, str]) -> Dict[str, str]:
+    def prepare_values(
+        self, color_map: Dict[str, Tuple[float, float, float]]
+    ) -> Dict[str, str]:
         """
         Prepare the values filled in the Latex template.
 
         Parameters
         ----------
-        year_color: Dict[str, str]
+        color_map: Dict[str, Tuple[float, float, float]]
             Mapping between a year and the related colour used for a bubble on the plot.
 
         Returns
@@ -530,9 +530,13 @@ class LatexBubblePlotWriter:
         Dict[str, str]
             Values to fill the Latex template with.
         """
+        delete_parenthesis = {ord(c): None for c in "()"}
         return {
             "defineColorsYear": "\n".join(
-                f"\\definecolor{{{year}}}{{rgb}}{{{year_color[year]}}}"
+                (
+                    f"\\definecolor{{{year}}}{{rgb}}"
+                    f"{{{str(color_map[year]).translate(delete_parenthesis)}}}"
+                )
                 for year in self.years
             ),
             "setColorsYear": "\n    ".join(
@@ -573,7 +577,12 @@ class LatexBubblePlotWriter:
 
     def save_plot(self) -> None:
         """Prepare the bubble plot specific values and fill the Latex template with them."""
-        year_color = year_color_mapping(self.years)
+        years_len = len(self.years)
+        if years_len <= len(self.conf.color_map):
+            rgb_colours = self.conf.color_map[:years_len]
+        else:
+            rgb_colours = compute_color_map(years_len)
+        year_color = dict(zip(self.years, rgb_colours))
         template_values = self.prepare_values(year_color)
         self.write(template_values)
 

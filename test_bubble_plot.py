@@ -13,7 +13,7 @@ from bubble_plot import (
     SplitXAxis,
     build_and_save_plots,
     compute_occurences_from,
-    year_color_mapping,
+    compute_color_map,
 )
 
 
@@ -90,6 +90,7 @@ class TestCSVWriter(TestCase):
             ["iy", "ix", "nbr", "year", "y", "x"],
             "template.tex",
             self.output_dir,
+            [],
         )
         self.years = {"2018", "2019", "2020"}
         self.entries = [
@@ -175,6 +176,7 @@ class TestLatexBubblePlotWriter(TestCase):
             ["iy", "ix", "nbr", "year", "y", "x"],
             "template.tex",
             self.output_dir,
+            [],
         )
         self.years = {"2018", "2019", "2020"}
         self.entries = [
@@ -220,7 +222,7 @@ class TestLatexBubblePlotWriter(TestCase):
 
     def test_year_color(self):
         years_len = len(self.years)
-        year_color = year_color_mapping(list(self.years))
+        year_color = compute_color_map(len(list(self.years)))
         self.assertEqual(years_len, len(set(year_color)))
 
     def test_prepare_values(self):
@@ -241,7 +243,12 @@ class TestLatexBubblePlotWriter(TestCase):
             "CSVDataFile",
             "colorsYear",
         )
-        year_color = year_color_mapping(list(self.years))
+        year_color = {
+            "2017": (0, 0, 1),
+            "2018": (0, 1, 0),
+            "2019": (1, 0, 0),
+            "2020": (1, 1, 1),
+        }
         self.assertEqual(
             expect, tuple(self.writer.prepare_values(year_color).keys())
         )
@@ -292,6 +299,7 @@ class TestAPI(TestCase):
             ["iy", "ix", "nbr", "year", "y", "x"],
             "template.tex",
             self.output_dir,
+            [],
         )
 
         self.plot_plan = Facets("Y", "X_left", "X_right")

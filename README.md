@@ -20,9 +20,10 @@ Please follow the instructions of the [Jupyter](https://jupyter.org/) notebook [
 - [X] Generate the Latex source code parametrised for a given bubble plot.
 - [X] Provide an example of interaction with the `bubble_plot` module.
 - [X] Document the Latex template variable & keys to manually define.
-- [ ] Add support to custom colour scheme for the bubbles (e.g. using `seaborn`).
+- [X] Add support to custom colour scheme for the bubbles (e.g. using `seaborn`).
 
 To think about:
+- [ ] Move the Latex package into its own repository?
 - [ ] The field `years` is in the `.sty`. How to extract it to be configurable?
 - [ ] Remove all IO interactions from the `bubble_plot` module?
 
@@ -40,8 +41,8 @@ The main command defined by the `bubbleplot` Latex package is `\bubbleplot`:
 \pgfplotsset{
     colormap={yearcolor}{
         color=(2017),
-		color=(2018),
-		color=(2019),
+        color=(2018),
+        color=(2019),
     }
 }
 

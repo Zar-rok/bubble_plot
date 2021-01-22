@@ -1,28 +1,35 @@
 \documentclass{standalone}
 \usepackage{bubbleplot}
 
-\definecolor{2017}{rgb}{1, 0.5, 0.5}
-\definecolor{2018}{rgb}{0.5, 1, 0.5}
-\definecolor{2019}{rgb}{0.5, 0.5, 1}
+\definecolor{2017}{rgb}{0.9248648648648647, 0.9751351351351352, 0.947027027027027}
+\definecolor{2018}{rgb}{0.5511687604559576, 0.7592733771834118, 0.6429138065401041}
+\definecolor{2019}{rgb}{0.1803921568627451, 0.5450980392156862, 0.3411764705882353}
+
 \pgfplotsset{
-    colormap={yearcolor}{
-      color=(2017),
-      color=(2018),
-      color=(2019),
-    }
+  colormap={yearcolor}{
+    color=(2017),
+    color=(2018),
+    color=(2019),
+  }
 }
 
 \begin{document}
-
 \bubbleplot[%
     width=7mm,
     height=1cm,
     xmin=-10,
     xmax=8,
-    enlarge y limits=0.3,
     ylabel=Snakes,
+    meta=nbr,
+    enlarge y limits=0.3,
+    x field=x,
+    x index field=ix,
+    y field=y,
+    y index field=iy,
+    year field=years,
     year x shift=-1.4cm,
     year y shift=3.5cm,
+    year padding=12,
     x left label=Fishes,
     x left label shift=3cm,
     x right label=Birds,

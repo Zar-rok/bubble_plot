@@ -24,5 +24,5 @@ setuptools.setup(
     ],
     python_requires=">=3.6",
     test_suite="test_bubble_plot.py",
-    extras_require={"example": ["pybtex"]},
+    extras_require={"example": ["pybtex", "seaborn"]},
 )
