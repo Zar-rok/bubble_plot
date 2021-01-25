@@ -530,7 +530,7 @@ class LatexBubblePlotWriter:
         Dict[str, str]
             Values to fill the Latex template with.
         """
-        delete_parenthesis = {ord(c): None for c in "()"}
+        delete_parenthesis = {ord(c): None for c in "[]"}
         return {
             "defineColorsYear": "\n".join(
                 (
